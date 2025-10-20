@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+	<name>Individual price</name>
+	<code>Individual price</code>
+	<version>1.0</version>
+	<author>art2make</author>
+	<link>https://art2make.ru/</link>
+
+	<file path="system/library/cart/cart.php">
+		<operation error="skip">
+			<search>
+				<![CDATA[// Reward Points]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+					// Product Specials2
+					$product_special_query2 = $this->db->query("SELECT " . DB_PREFIX . "customer_individ_price.price FROM `" . DB_PREFIX . "product` 
+								LEFT JOIN " . DB_PREFIX . "customer_individ_price ON " . DB_PREFIX . "customer_individ_price.product_1c_sku = " . DB_PREFIX . "product.model
+								LEFT JOIN " . DB_PREFIX . "customer_individ_users ON " . DB_PREFIX . "customer_individ_users.code_1c = " . DB_PREFIX . "customer_individ_price.customer_1c_id
+								WHERE " . DB_PREFIX . "product.product_id = " . (int)$cart['product_id'] . "   AND " . DB_PREFIX . "customer_individ_users.user_id = " . (int)$cart['customer_id'] . " LIMIT 1");
+
+					if ($product_special_query2->num_rows) {
+					$price = $product_special_query2->row['price'];
+					}
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/extension/module/featured.php">
+		<operation error="skip">
+			<search>
+				<![CDATA[
+					if ($this->customer->isLogged() || !$this->config->get('config_customer_price')) {
+				]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+					// Individual customer prices for category products
+					if ($this->customer->isLogged()) {
+						$this->load->model('extension/module/customer_prices');
+						$customer_id = $this->customer->getId();
+						
+						$customer_price = $this->model_extension_module_customer_prices->getCustomerPrice($product_id, $customer_id);
+						
+						if ($customer_price) 
+							$product_info['price'] = $customer_price;
+					}
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/product/category.php">
+		<operation error="skip">
+			<search>
+				<![CDATA[
+					class ControllerProductCategory extends Controller {
+				]]>
+			</search>
+			<add position="after">
+				<![CDATA[
+				// -- -- Customer prices access - ДОБАВЛЕННЫЙ МЕТОД
+					public function getCustomerPrice($product_id) {
+						$customer_prices = $this->registry->get('controller_extension_module_customer_prices');
+					if ($customer_prices !== null) {
+						return $customer_prices->getCustomerPrice($product_id);
+					}
+					return false;
+					}
+				]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search index="1" trim="true">
+				<![CDATA[
+					foreach ($results as $result) {
+				]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+					// -- -- Individual customer prices for category products
+				if ($this->customer->isLogged()) {
+				$this->load->model('extension/module/customer_prices');
+				$customer_id = $this->customer->getId();
+				
+				foreach ($results as &$result) {
+					$customer_price = $this->model_extension_module_customer_prices->getCustomerPrice($result['product_id'], $customer_id);
+					
+					if ($customer_price) {
+						$result['price'] = $customer_price;
+					}
+				}
+				unset($result);
+				}
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/product/search.php">
+		<operation error="skip">
+			<search>
+				<![CDATA[
+					if ($result['image']) {
+				]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+				// -- -- Individual customer prices for category products
+				if ($this->customer->isLogged()) {
+					$this->load->model('extension/module/customer_prices');
+					$customer_id = $this->customer->getId();
+					
+					$customer_price = $this->model_extension_module_customer_prices->getCustomerPrice($result['product_id'], $customer_id);
+					
+					if ($customer_price) { 
+						$result['price'] = $customer_price;
+						}
+				}				
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/product/product.php">
+		<operation error="skip">
+			<search>
+				<![CDATA[
+					if ($product_info) {
+				]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+				// -- -- Individual customer price
+				if ($this->customer->isLogged()) {
+				$this->load->model('extension/module/customer_prices');
+				$customer_price = $this->model_extension_module_customer_prices->getCustomerPrice($product_id, $this->customer->getId());
+			
+				if ($customer_price) {
+				// Update product price
+				$product_info['price'] = $customer_price;
+				
+				// Update displayed price
+				$data['price'] = $this->currency->format(
+					$this->tax->calculate($customer_price, $product_info['tax_class_id'], $this->config->get('config_tax')), 
+					$this->session->data['currency']
+				);
+				
+				// Update special price if exists
+				if ($product_info['special']) {
+					$data['special'] = $this->currency->format(
+						$this->tax->calculate($customer_price, $product_info['tax_class_id'], $this->config->get('config_tax')), 
+						$this->session->data['currency']
+							);
+						}
+					}
+				}
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/common/uni_live_search.php">
+		<operation error="skip">
+			<search>
+				<![CDATA[
+					class ControllerCommonUniLiveSearch extends Controller {
+				]]>
+			</search>
+			<add position="after">
+				<![CDATA[
+			// -- -- Customer prices access - ДОБАВЛЕННЫЙ МЕТОД
+			public function getCustomerPrice($product_id) {
+			$customer_prices = $this->registry->get('controller_extension_module_customer_prices');
+			if ($customer_prices !== null) {
+			return $customer_prices->getCustomerPrice($product_id);
+					}
+				return false;
+			}
+				]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search>
+				<![CDATA[
+					foreach ($products as $result) {
+				]]>
+			</search>
+			<add position="after">
+				<![CDATA[
+			// -- -- Individual customer prices for category products
+					if ($this->customer->isLogged()) {
+						$this->load->model('extension/module/customer_prices');
+						$customer_id = $this->customer->getId();
+						
+						$customer_price = $this->model_extension_module_customer_prices->getCustomerPrice($result['product_id'], $customer_id);
+						
+						if ($customer_price) {
+							$result['price'] = $customer_price;
+						}
+					}
+				]]>
+			</add>
+		</operation>
+	</file>
+</modification>
