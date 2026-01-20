@@ -1,0 +1,10 @@
+БД таблицы
+kslg2_customer_individ_users
+kslg2_customer_individ_price
+
+Название столбцов для сопоставления:
+customer_1c_id,price,product_1c_sku
+
+перед выгрузкой - очистить таблицу
+
+

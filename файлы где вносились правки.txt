@@ -1,0 +1,10 @@
+/www/dev.kslogistic.ru/catalog/controller/checkout/uni_checkout.php //-- 
+/www/dev.kslogistic.ru/catalog/controller/common/uni_live_search.php
+/www/dev.kslogistic.ru/catalog/controller/product/product.php
+/www/dev.kslogistic.ru/catalog/controller/product/search.php
+/www/dev.kslogistic.ru/catalog/controller/product/category.php
+/www/dev.kslogistic.ru/catalog/controller/extension/module/featured.php
+/www/dev.kslogistic.ru/system/library/cart/cart.php
+
+/www/dev.kslogistic.ru/catalog/model/extension/module/customer_prices.php
+/www/dev.kslogistic.ru/catalog/controller/extension/module/customer_prices.php
